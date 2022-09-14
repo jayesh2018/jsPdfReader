@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<script src='https://cdn.jsdelivr.net/npm/pdfjs-dist@2.16.105/build/pdf.min.js'></script>
+</head>
+
+<body>
+	<form enctype="multipart/form-data">
+		<input id="upload" type=file accept="application/pdf" name="files[]" size=30 multiple>
+	</form>
+
+	<textarea class="form-control" rows=535 cols=220 id="ms_word_filtered_html"></textarea>
+
+	<script>
+		const imageList = document.querySelector('#ms_word_filtered_html');
+		function handleFileSelect(evt) {
+			let files = evt.target.files; // FileList object
+
+			// use the 1st file from the list
+			[...files].forEach((file) =>
+				imageList.append(file.name,', ')
+			);
+			let f = files[0];
+
+			let reader = new FileReader();
+
+			// Closure to capture the file information.
+			reader.onload = (function (theFile) {
+				return function (e) {
+					console.log(e)
+				};
+			})(f);
+
+			// Read in the image file as a data URL.
+			reader.readAsText(f);
+		}
+		document.getElementById('upload').addEventListener('change', handleFileSelect, false);
+		console.log(pdfjsLib);
+	</script>
+</body>
+
+</html>

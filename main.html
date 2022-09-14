@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta charset='utf-8'>
+	<title>Page Title</title>
+	<script src='https://cdn.jsdelivr.net/npm/pdfjs-dist@2.16.105/build/pdf.min.js'></script>
+</head>
+
+<body>
+	<form enctype="multipart/form-data">
+		<input id="upload" type=file accept="application/pdf" name="files[]" size=30 multiple>
+	</form>
+
+	<textarea class="form-control" rows=535 cols=220 id="ms_word_filtered_html"></textarea>
+
+	<script>
+		const output = document.querySelector('#ms_word_filtered_html');
+		const pageLimiter = "-------------------------------"
+		function processPdfData(pdf) {
+			console.log(pdf._pdfInfo.numPages);
+			var finalString = "";
+			var pages = new Array();
+			console.log("line 23")
+			// for (let pageNum = 1; pageNum <= pdf._pdfInfo.numPages; pageNum++) {
+			// 	console.log("line 25" + pageNum)
+			// 	pdf.getPage(pageNum).then(function (pdfPage) {
+			// 		console.log("line 27")
+			// 		// The main trick to obtain the text of the PDF page, use the getTextContent method
+			// 		pdfPage.getTextContent().then(function (textContent) {
+			// 			finalString += pageLimiter + "PAGE " + pageNum + pageLimiter + "\n"
+			// 			console.log("line 31")
+			// 			var textItems = textContent.items;
+
+
+			// 			// Concatenate the string of the item to the final string
+			// 			for (var i = 0; i < textItems.length; i++) {
+			// 				var item = textItems[i];
+			// 				if (item.str && item.str != " ")
+			// 					finalString += i + "\t" + item.str + "\n";
+			// 			}
+
+			// 			// Solve promise with the text retrieven from the page
+			// 			output.append(finalString);
+			// 		});
+			// 	});
+			// }
+			var pagesPromises = [];
+			for (var i = 0; i < pdf.numPages; i++) {
+				// Required to prevent that i is always the total of pages
+				(function (pageNumber) {
+					// Store the promise of getPageText that returns the text of a page
+					pagesPromises.push(getPageText(pageNumber, pdfDocument));
+				})(i + 1);
+			}
+
+			Promise.all(pagesPromises).then(function (pagesText) {
+
+				// Display text of all the pages in the console
+				// e.g ["Text content page 1", "Text content page 2", "Text content page 3" ... ]
+				console.log(pagesText);
+			});
+
+		}
+		function handleFileSelect(evt) {
+			let files = evt.target.files; // FileList object
+
+			// use the 1st file from the list
+			// [...files].forEach((file) =>
+			// 	output.append(file.name, ', ')
+			// );
+			let f = files[0];
+
+			let reader = new FileReader();
+
+			// Closure to capture the file information.
+			reader.onload = function () {
+				// console.log(this.result);
+				var typedarray = new Uint8Array(this.result);
+				// pdfjsLib.getDocument(typedarray).then(doc => {
+				// 	console.log(doc._pdfInfo.numPages);
+				// });
+
+				const loadingTask = pdfjsLib.getDocument(typedarray);
+				loadingTask.promise.then(pdf => {
+					processPdfData(pdf);
+				}, function (reason) {
+					// PDF loading error
+					console.error(reason);
+				});
+				// return function (e) {
+				// 	console.log(e)
+				// 	console.log(theFile)
+				// 	var typedarray = new Uint8Array(e.result);
+				// 	pdfjsLib.getDocument(typedarray).then(doc => {
+				// 		console.log(doc._pdfInfo.numPages);
+				// 	});
+				// };
+			};
+
+			// Read in the image file as a data URL.
+			reader.readAsArrayBuffer(f);
+		}
+
+		document.getElementById('upload').addEventListener('change', handleFileSelect, false);
+	</script>
+	<canvas id="my_canvas"></canvas>
+	<script>
+		// pdfjsLib.
+		// const reader = new FileReader();
+		// reader.readAsDataURL('./demo1.pdf');
+		// pdfjsLib.getDocument('./demo1.pdf').then(doc => {
+		// 	console.log(doc._pdfInfo.numPages);
+		// });
+	</script>
+</body>
+
+</html>
